@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TikTok Remote</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #222;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #00bcd4;
+            margin-bottom: 20px;
+        }
+
+        .connection-info {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .connection-info label, .connection-info input {
+            display: block;
+            margin-bottom: 10px;
+            color: #bbb;
+        }
+
+        .connection-info input[type="text"],
+        .connection-info input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #555;
+            border-radius: 4px;
+            background-color: #444;
+            color: #eee;
+            font-size: 16px;
+        }
+
+        .connection-info input[type="text"]:focus,
+        .connection-info input[type="number"]:focus {
+            outline: none;
+            border-color: #00bcd4;
+        }
+
+        .connection-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 10px;
+        }
+
+        .connection-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .connect-btn {
+            background-color: #4CAF50; /* Green */
+            color: white;
+        }
+
+        .connect-btn:hover {
+            background-color: #45a049;
+        }
+
+        .disconnect-btn {
+            background-color: #f44336; /* Red */
+            color: white;
+        }
+
+        .disconnect-btn:hover {
+            background-color: #da190b;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #ccc;
+        }
+
+        .remote-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 3 колонки */
+            gap: 15px;
+            margin-top: 30px;
+            width: 100%;
+            max-width: 600px; /* Максимальная ширина для сетки кнопок */
+        }
+
+        .remote-button {
+            background-color: #0056b3; /* Darker blue */
+            color: white;
+            padding: 20px 10px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .remote-button:hover {
+            background-color: #004494;
+            transform: translateY(-2px);
+        }
+
+        .remote-button:active {
+            background-color: #003377;
+            transform: translateY(0);
+        }
+
+        .remote-button i {
+            font-size: 3em; /* Размер иконок */
+            margin-bottom: 5px;
+        }
+
+        .full-width-button {
+            grid-column: span 3; /* Кнопка занимает всю ширину */
+            background-color: #e67e22; /* Оранжевый */
+            padding: 15px;
+        }
+
+        .full-width-button:hover {
+            background-color: #d35400;
+        }
+
+        /* Иконки Font Awesome */
+        @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css');
+
+        /* Медиа-запросы для адаптивности */
+        @media (max-width: 768px) {
+            .remote-grid {
+                grid-template-columns: repeat(2, 1fr); /* 2 колонки на меньших экранах */
+                max-width: 400px;
+            }
+            .full-width-button {
+                grid-column: span 2;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .remote-grid {
+                grid-template-columns: 1fr; /* 1 колонка на самых маленьких экранах */
+            }
+            .full-width-button {
+                grid-column: span 1;
+            }
+            .remote-button {
+                font-size: 1.1em;
+                padding: 15px 5px;
+            }
+            .remote-button i {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>TikTok Remote Control</h1>
+
+    <div class="connection-info">
+        <label for="ipAddress">IP адрес ПК:</label>
+        <input type="text" id="ipAddress" value="192.168.31.32" placeholder="Например: 192.168.1.100">
+        <label for="port">Порт:</label>
+        <input type="number" id="port" value="8765" placeholder="Например: 8765">
+        <div class="connection-buttons">
+            <button class="connect-btn" onclick="connectWebSocket()">Подключиться</button>
+            <button class="disconnect-btn" onclick="disconnectWebSocket()">Отключиться</button>
+        </div>
+        <p id="status">Статус: Отключено</p>
+    </div>
+
+    <div class="remote-grid">
+        <button class="remote-button" onclick="sendCommand('LEFT')">
+            <i class="fas fa-arrow-left"></i>
+            ВЛЕВО
+        </button>
+        <button class="remote-button" onclick="sendCommand('UP')">
+            <i class="fas fa-arrow-up"></i>
+            ВВЕРХ
+        </button>
+        <button class="remote-button" onclick="sendCommand('RIGHT')">
+            <i class="fas fa-arrow-right"></i>
+            ВПРАВО
+        </button>
+        <button class="remote-button" onclick="sendCommand('SPACE')">
+            <i class="fas fa-play-pause"></i>
+            ПАУЗА/ПЛЕЙ
+        </button>
+        <button class="remote-button" onclick="sendCommand('DOWN')">
+            <i class="fas fa-arrow-down"></i>
+            ВНИЗ
+        </button>
+        <button class="remote-button" onclick="sendCommand('MUTE')">
+            <i class="fas fa-volume-mute"></i>
+            ЗВУК
+        </button>
+        <button class="remote-button" onclick="sendCommand('L')">
+            <i class="fas fa-heart"></i>
+            ЛАЙК
+        </button>
+        <button class="remote-button" onclick="sendCommand('C')">
+            <i class="fas fa-comment"></i>
+            КОММЕНТ
+        </button>
+        <button class="remote-button" onclick="sendCommand('R')">
+            <i class="fas fa-share"></i>
+            ПОДЕЛИТЬСЯ
+        </button>
+
+        <button class="remote-button full-width-button" onclick="sendCommand('EXIT')">
+            <i class="fas fa-power-off"></i>
+            Завершить Сервер на ПК
+        </button>
+    </div>
+
+    <script>
+        let ws; // WebSocket-соединение
+
+        // Замените на реальный IP-адрес вашего ПК, если он не совпадает с тем, что выведет сервер
+        const defaultIp = "YOUR_PC_IP_ADDRESS";
+        const defaultPort = 8765;
+
+        document.getElementById('ipAddress').value = defaultIp;
+        document.getElementById('port').value = defaultPort;
+
+        function updateStatus(message, color = '#ccc') {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = `Статус: ${message}`;
+            statusElement.style.color = color;
+        }
+
+        function connectWebSocket() {
+            const ip = document.getElementById('ipAddress').value;
+            const port = document.getElementById('port').value;
+            const wsUrl = `ws://<span class="math-inline">\{ip\}\:</span>{port}`;
+
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                updateStatus('Уже подключено', 'orange');
+                return;
+            }
+
+            updateStatus('Подключение...', 'yellow');
+
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                updateStatus('Подключено!', '#4CAF50');
+                console.log('WebSocket Connected');
+            };
+
+            ws.onmessage = (event) => {
+                console.log('Message from server:', event.data);
+                // Здесь можно обрабатывать сообщения от сервера, если они есть
+            };
+
+            ws.onclose = (event) => {
+                if (event.wasClean) {
+                    updateStatus(`Соединение закрыто чисто, код=<span class="math-inline">\{event\.code\} причина\=</span>{event.reason}`, 'red');
+                } else {
+                    updateStatus('Соединение разорвано!', 'red'); // Например, обрыв сети или ошибка
+                }
+                console.log('WebSocket Disconnected', event);
+            };
+
+            ws.onerror = (error) => {
+                updateStatus(`Ошибка подключения: ${error.message || 'Неизвестная ошибка'}`, 'red');
+                console.error('WebSocket Error:', error);
+            };
+        }
+
+        function disconnectWebSocket() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.close(1000, "User disconnected"); // Код 1000 означает нормальное закрытие
+                updateStatus('Отключено', 'red');
+            } else {
+                updateStatus('Не подключено для отключения', 'orange');
+            }
+        }
+
+        function sendCommand(command) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(command);
+                console.log(`Command sent: ${command}`);
+            } else {
+                updateStatus('Не подключено к серверу!', 'orange');
+                console.warn('WebSocket not connected. Cannot send command.');
+                // Предложите подключиться или дайте обратную связь
+            }
+        }
+
+        // Автоматическое подключение при загрузке страницы (опционально)
+        // window.onload = connectWebSocket;
+    </script>
+</body>
+</html>
